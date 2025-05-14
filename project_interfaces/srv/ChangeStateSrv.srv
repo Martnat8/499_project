@@ -1,0 +1,6 @@
+# lifecycle_msgs/srv/ChangeState.srv
+lifecycle_msgs/Transition transition
+---
+bool        success
+uint8       result
+

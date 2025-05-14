@@ -146,7 +146,7 @@ class CameraDriver(LifecycleNode):
 		
 
 
-# Basic ROS2 Setup function used for 1 Hz frequecy sin 
+# Basic ROS2 Setup function
 def main(args=None):
 	
 	# Initialize rclpy.  We should do this every time.
