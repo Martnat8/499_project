@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Lifecycle coordinator for a series of nodes for ROB 499 Final Project
+# This node is a lifecycle coordinator. 
 #
 # lifecycle_coordinator.py
 #
@@ -21,11 +21,12 @@ from project_interfaces.srv import ChangeStateSrv
 
 
 class LifecycleCoordinator(Node):
-	def __init__(self, node_names):
+	def __init__(self):
 		super().__init__('coordinator')
 
-		self.declare_parameter('node_names', 'camera_driver')
-		self.node_names = self.get_parameter('node_names').get_parameter_value().string_array_value
+		# Parameter is an list of lifecycle enabled nodes.
+		self.declare_parameter('node_names', ['camera_driver'])
+		node_names = self.get_parameter('node_names').value
 
 		# Make a service clients for each of the nodes we want to coordinate.
 		self.client_list = [self.create_client(ChangeState, f'{name}/change_state') for name in node_names]
@@ -38,35 +39,42 @@ class LifecycleCoordinator(Node):
 		# Create subscriber so that we can control lifecycle nodes
 		self.service = self.create_service(ChangeStateSrv, 'transition', self.service_callback)
 
-		self.manager = LifecycleCoordinator(self.node_names)
 
-	def service_callback(self, msg):
+	def service_callback(self, request, response):
 
-
-		new_state = msg.transition
-		request = ChangeState.Request()
-		request.transition.id = new_state
+		state = request.transition.id
 
 
+		self.get_logger().info(f'Requesting transition to {state}')
+		futures = self.change_state(state)
 
+		for fut in futures:
+			fut.add_done_callback(self._on_transition_done)
+
+		response.success = True
+		response.result = "Transition in progress"
+		return response
 
 	# This wraps up the state change request.
 	def change_state(self, state):
+
 		request = ChangeState.Request()
 		request.transition.id = state
 
 		# Make the calls, one to each node, and store the futures in a list.
 		self.responses = [client.call_async(request) for client in self.client_list]
 
-	# Are all of the responses done?  If any of them are not done, then return False.
-	# Otherwise, return True.
-	def requests_done(self):
-		for response in self.responses:
-			if not response.done():
-				return False
+		return self.responses
 
-		return True
+	# This reports on the futures as transitions succeed
+	def _on_transition_done(self, fut):
 
+		try:
+			result = fut.result()
+			self.get_logger().info(f'Transition succeeded: {result}')
+
+		except Exception as e:
+			self.get_logger().error(f'Transition failed: {e}')
 
 
 def main(args=None):

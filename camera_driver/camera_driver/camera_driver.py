@@ -2,7 +2,7 @@
 
 
 # Publishes camera frames on a topic raw_image_out from a UVC compiant camera.
-# Is a lifecycle supported node
+# Is a lifecycle supported node.
 #
 # camera_driver.py
 #
