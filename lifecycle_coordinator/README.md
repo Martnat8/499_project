@@ -15,7 +15,7 @@ Shutdown: id=5
 
 You can only transition in a certain order here in order:
 
-configure -> activate -> deactivate -> cleanup -> shutdoown
+configure (1) -> activate (3) -> deactivate (4) -> cleanup (2) -> shutdown (5)
 _____________________________________________________________________________________
 _____________________________________________________________________________________
 Maintainer - Nathan Martin - martnat8@oregonstate.edu
