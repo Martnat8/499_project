@@ -5,6 +5,9 @@
 # lifecycle_coordinator.py
 #
 # Nathan Martin
+#
+#TODO: change the service call to three options bringup, pause, shutdown and
+# have the bringup run through configure and activate. Shutdown should be similar
 
 
 # Import the usual ROS stuff
@@ -43,7 +46,6 @@ class LifecycleCoordinator(Node):
 	def service_callback(self, request, response):
 
 		state = request.transition.id
-
 
 		self.get_logger().info(f'Requesting transition to {state}')
 		futures = self.change_state(state)
