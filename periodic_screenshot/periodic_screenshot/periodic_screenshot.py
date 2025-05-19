@@ -27,11 +27,16 @@ class PeriodicScreenshot(LifecycleNode):
 		
 		self.get_logger().info('Configuring')
 
+		# Use CV Bridge to convert between ROS 2 and OpenCV images
+		self.bridge = CvBridge()
+
 		# Declaring parameters
 		self.declare_parameter('rate_hz', 1280)
 		self.declare_parameter('frame_width', 1280)
 		self.declare_parameter('frame_height', 720)
+		self.declare_parameter('topic_name', '/raw_image_out')
 		self.declare_parameter('save_path', 720)
+		self.declare_parameter('save_name', 'test_img')
 
 		# Pull out parameters to determine capture parameters
 
@@ -39,9 +44,17 @@ class PeriodicScreenshot(LifecycleNode):
 		self.width = self.get_parameter('frame_width').get_parameter_value().integer_value
 		self.height = self.get_parameter('frame_height').get_parameter_value().integer_value
 		self.save_path = self.get_parameter('save_path').get_parameter_value().string_value
+		topic = self.get_parameter('topic_name').get_parameter_value().string_value
+		save_name = self.get_parameter('save_name').get_parameter_value().string_value
+
+		# Create the subscriber
+		self.sub = self.create_subscription(Image, topic, self.callback, 10)
 
 		# Get rate parameter to controll timer
 		timer_period = 1 / rate_hz
+
+		# Counter to track saved files
+		self.counter = 0
 
 		# Create a timer using the frequency parameter
 		self.timer = self.create_timer(timer_period, self.timer_callback, autostart=False)
@@ -89,10 +102,13 @@ class PeriodicScreenshot(LifecycleNode):
 		return TransitionCallbackReturn.ERROR
 
 	# This callback will be called every time the timer fires.
-	def timer_callback(self):
+	def timer_callback(self, msg):
 		
-		# Code to save to disc
-		
+		cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+
+		self.counter += 1
+
+		# Need to concatinate counter and save_name and use that to save 
 
 
 # Basic ROS2 Setup function
