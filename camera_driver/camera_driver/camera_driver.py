@@ -122,7 +122,7 @@ class CameraDriver(LifecycleNode):
 		return TransitionCallbackReturn.SUCCESS
 
 	def on_error(self, previous_state):
-		self.get_logger().info('ERROR!')
+		self.get_logger().error('ERROR!')
 
 		return TransitionCallbackReturn.ERROR
 
