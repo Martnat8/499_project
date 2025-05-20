@@ -6,8 +6,7 @@
 #
 # Nathan Martin
 #
-#TODO: change the service call to three options bringup, pause, shutdown and
-# have the bringup run through configure and activate. Shutdown should be similar
+
 
 
 # Import the usual ROS stuff
@@ -40,43 +39,71 @@ class LifecycleCoordinator(Node):
 				self.get_logger().info('waiting for lifecycle node to become available')
 
 		# Create subscriber so that we can control lifecycle nodes
-		self.service = self.create_service(ChangeStateSrv, 'transition', self.service_callback)
+		self.service = self.create_service(ChangeStateSrv, 'lifecycle_control', self.service_callback)
 
+		
+		self.TRANSITION_MAP = {
+			'configure' : Transition.TRANSITION_CONFIGURE,
+			'activate' : Transition.TRANSITION_ACTIVATE,
+			'deactivate' : Transition.TRANSITION_DEACTIVATE,
+			'cleanup' : Transition.TRANSITION_CLEANUP,
+			'shutdown' : Transition.TRANSITION_INACTIVE_SHUTDOWN,
+		}
+
+		# Command sequences so we can go through sequences more naturally
+		self.COMMAND_SEQUENCE = {
+			'bringup': ['configure', 'activate'],
+			'pause' : ['deactivate'],
+			'unpause' : ['activate'],
+			'shutdown' : ['deactivate', 'cleanup', 'shutdown'],
+		}
+		
 
 	def service_callback(self, request, response):
 
-		state = request.transition.id
+		command = request.command
 
-		self.get_logger().info(f'Requesting transition to {state}')
-		futures = self.change_state(state)
+		# Make sure the input is a known string
+		if command not in self.COMMAND_SEQUENCE:
+			response.success = False
+			response.result = f"'{command}' is an unknown request"
+			return response
 
-		for fut in futures:
-			fut.add_done_callback(self._on_transition_done)
+
+		# Iterate through the state sequence
+		for state in self.COMMAND_SEQUENCE[command]:
+
+			transition_id = self.TRANSITION_MAP[state]
+
+			self.get_logger().info(f"Requesting '{state}' transition (id {transition_id})")
+
+			self.change_state(transition_id)
+
+			# Spin until transitions are complete
+			while rclpy.ok() and not self.requests_done():
+				rclpy.spin_once(self, timeout_sec=0.1)
 
 		response.success = True
-		response.result = "Transition in progress"
+		response.result = f"Lifecycle command: {command} completed successfully."
 		return response
 
 	# This wraps up the state change request.
 	def change_state(self, state):
-
 		request = ChangeState.Request()
 		request.transition.id = state
 
 		# Make the calls, one to each node, and store the futures in a list.
 		self.responses = [client.call_async(request) for client in self.client_list]
 
-		return self.responses
+	# Are all of the responses done?  If any of them are not done, then return False.
+	# Otherwise, return True.
+	def requests_done(self):
+		for response in self.responses:
+			if not response.done():
+				return False
 
-	# This reports on the futures as transitions succeed
-	def _on_transition_done(self, fut):
+		return True
 
-		try:
-			result = fut.result()
-			self.get_logger().info(f'Transition succeeded: {result}')
-
-		except Exception as e:
-			self.get_logger().error(f'Transition failed: {e}')
 
 
 def main(args=None):

@@ -61,6 +61,8 @@ class PeriodicScreenshot(LifecycleNode):
 
 		return TransitionCallbackReturn.SUCCESS
 
+
+
 	def on_activate(self, previous_state):
 		self.get_logger().info('Activating')
 
@@ -69,6 +71,7 @@ class PeriodicScreenshot(LifecycleNode):
 
 		return super().on_activate(previous_state)
 	
+
 	def on_deactivate(self, previous_state):
 		self.get_logger().info('Deactivating')
 
@@ -76,6 +79,7 @@ class PeriodicScreenshot(LifecycleNode):
 		self.timer.cancel()
 
 		return super().on_deactivate(previous_state)
+	
 	
 	def on_cleanup(self, previous_state):
 		self.get_logger().info('Cleaning up')
@@ -87,6 +91,7 @@ class PeriodicScreenshot(LifecycleNode):
 		self.destroy_subscription(self.sub)
 
 		return TransitionCallbackReturn.SUCCESS
+
 	
 	def on_shutdown(self, previous_state):
 		self.get_logger().info('Shutting down')
@@ -98,6 +103,7 @@ class PeriodicScreenshot(LifecycleNode):
 		self.destroy_subscription(self.sub)
 
 		return TransitionCallbackReturn.SUCCESS
+
 
 	def on_error(self, previous_state):
 		self.get_logger().error('ERROR!')

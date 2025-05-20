@@ -23,10 +23,6 @@ class CameraDriver(LifecycleNode):
 		# Initialize the parent class of name oscope
 		super().__init__('camera_driver')
 
-	def on_configure(self, previous_state):
-		
-		self.get_logger().info('Configuring')
-
 		# Declaring parameters
 		self.declare_parameter('frame_id', 'camera')	
 		self.declare_parameter('device_id', 0)	
@@ -35,6 +31,10 @@ class CameraDriver(LifecycleNode):
 		self.declare_parameter('frame_width', 1280)
 		self.declare_parameter('frame_height', 720)
 		self.declare_parameter('topic_name', '/raw_image_out')
+
+	def on_configure(self, previous_state):
+		
+		self.get_logger().info('Configuring')
 
 		# Pull out parameters to determine capture parameters
 		self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
@@ -46,7 +46,7 @@ class CameraDriver(LifecycleNode):
 		topic = self.get_parameter('topic_name').get_parameter_value().string_value
 		
 		# Create a publisher, and assign it to a member variable. 
-		self.pub = self.create_publisher(Image, topic, 10)
+		self.pub = self.create_lifecycle_publisher(Image, topic, 10)
 
 		# Get FPS parameter to controll timer
 		timer_period = 1 / fps
@@ -56,6 +56,9 @@ class CameraDriver(LifecycleNode):
 
 		if not self.capture.isOpened():
 			self.get_logger().error('Failed to open camera')
+
+			# Destroy publisher if failed
+			self.destroy_lifecycle_publisher(self.pub)
 		
 			return TransitionCallbackReturn.FAILURE
 		
@@ -75,7 +78,10 @@ class CameraDriver(LifecycleNode):
 		# Create a timer using the frequency parameter
 		self.timer = self.create_timer(timer_period, self.timer_callback, autostart=False)
 
-		return TransitionCallbackReturn.SUCCESS
+		self.get_logger().info('After timer')
+
+		return super().on_configure(previous_state)
+
 
 	def on_activate(self, previous_state):
 		self.get_logger().info('Activating')
@@ -106,6 +112,7 @@ class CameraDriver(LifecycleNode):
 		self.destroy_lifecycle_publisher(self.pub)
 
 		return TransitionCallbackReturn.SUCCESS
+
 	
 	def on_shutdown(self, previous_state):
 		self.get_logger().info('Shutting down')
@@ -120,6 +127,7 @@ class CameraDriver(LifecycleNode):
 		self.destroy_lifecycle_publisher(self.pub)
 
 		return TransitionCallbackReturn.SUCCESS
+
 
 	def on_error(self, previous_state):
 		self.get_logger().error('ERROR!')
