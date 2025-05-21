@@ -1,5 +1,5 @@
 # lifecycle_msgs/srv/ChangeStateSrv.srv
-lifecycle_msgs/Transition transition
+string command
 ---
 bool        success
 string       result

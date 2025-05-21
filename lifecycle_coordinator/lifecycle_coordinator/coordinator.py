@@ -6,8 +6,7 @@
 #
 # Nathan Martin
 #
-#TODO: change the service call to three options bringup, pause, shutdown and
-# have the bringup run through configure and activate. Shutdown should be similar
+
 
 
 # Import the usual ROS stuff
@@ -40,26 +39,98 @@ class LifecycleCoordinator(Node):
 				self.get_logger().info('waiting for lifecycle node to become available')
 
 		# Create subscriber so that we can control lifecycle nodes
-		self.service = self.create_service(ChangeStateSrv, 'transition', self.service_callback)
+		self.service = self.create_service(ChangeStateSrv, 'lifecycle_control', self.service_callback)
+
+		self.step_index = 0
+		self.current_sequence = []
+		self.responses: list = []
+
+		# Command sequences so we can go through sequences more naturally
+		self.command_sequence = {
+			'bringup': ['configure', 'activate'],
+			'pause' : ['deactivate'],
+			'unpause' : ['activate'],
+			'shutdown' : ['deactivate', 'shutdown'],
+		}
+
+		self.transition_map = {
+			'configure' : Transition.TRANSITION_CONFIGURE,
+			'activate' : Transition.TRANSITION_ACTIVATE,
+			'deactivate' : Transition.TRANSITION_DEACTIVATE,
+			'cleanup' : Transition.TRANSITION_CLEANUP,
+			'shutdown' : Transition.TRANSITION_INACTIVE_SHUTDOWN,
+		}
 
 
 	def service_callback(self, request, response):
 
-		state = request.transition.id
+		# Check to see if we're already running a transition
+		if self.step_index < len(self.current_sequence):
+			response.success = False
+			response.result = "Another transition already in progress"
+			return response
 
-		self.get_logger().info(f'Requesting transition to {state}')
-		futures = self.change_state(state)
+		# Check to see if the input string matches a known command
+		if request.command not in self.command_sequence:
+			response.success = False
+			response.result  = f"Unknown command '{request.command}'"
+			return response
 
-		for fut in futures:
-			fut.add_done_callback(self._on_transition_done)
+		# Grab the command sequence and initialize a fresh count 
+		self.current_sequence = self.command_sequence[request.command]
+		self.step_index = 0
 
+		# launch the first transition
+		self._launch_step()
+
+		# Fill Response and send
 		response.success = True
-		response.result = "Transition in progress"
+		response.result  = f"Started '{request.command}' sequence"
 		return response
+
+
+
+	def _launch_step(self):
+
+		# Step index is used to know if we've completed all commands
+		if self.step_index >= len(self.current_sequence):
+			self.get_logger().info("All steps done")
+			return
+
+		# Grab the state and transition id, log the request
+		state = self.current_sequence[self.step_index]
+		transition_id   = self.transition_map[state]
+		self.get_logger().info(f"Requesting '{state}' (id {transition_id})")
+
+		# Futures assigned to the responses of change_state's use of call_async
+		futures = self.change_state(transition_id)
+		for fut in futures:
+			fut.add_done_callback(self._on_step_done)
+
+
+	def _on_step_done(self, fut):
+
+		# ignore any calls once we’ve advanced past the last step
+		if self.step_index >= len(self.current_sequence):
+			return
+
+		# Only run when all futures from the last change_state have finished
+		if not all(f.done() for f in self.responses):
+			return  
+
+		# Check success
+		if not all(f.result().success for f in self.responses):
+			self.get_logger().error(f"Step {self.current_sequence[self.step_index]} failed")
+			return
+
+		# Move to the next step
+		self.get_logger().info(f"Step {self.current_sequence[self.step_index]} succeeded")
+		self.step_index += 1
+		self._launch_step()
+
 
 	# This wraps up the state change request.
 	def change_state(self, state):
-
 		request = ChangeState.Request()
 		request.transition.id = state
 
@@ -68,15 +139,6 @@ class LifecycleCoordinator(Node):
 
 		return self.responses
 
-	# This reports on the futures as transitions succeed
-	def _on_transition_done(self, fut):
-
-		try:
-			result = fut.result()
-			self.get_logger().info(f'Transition succeeded: {result}')
-
-		except Exception as e:
-			self.get_logger().error(f'Transition failed: {e}')
 
 
 def main(args=None):

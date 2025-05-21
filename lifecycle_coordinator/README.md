@@ -5,17 +5,22 @@ This package contains a lifecycle coordinator node.
 Once launched can be controlled with service calls:
 
 # Service call syntax
-ros2 service call /transition project_interfaces/srv/ChangeStateSrv "{transition: {id: 1}}"
+ros2 service call /lifecycle_control project_interfaces/srv/ChangeStateSrv "{ command: 'bringup' }"
 
-Configure: id=1
-Cleanup: id=2
-Activate: id=3
-Deactivate: id=4
-Shutdown: id=5
+These are the different commands you can pass in the service. Each will move through the states in sequence.
 
-You can only transition in a certain order here in order:
+'bringup': configure -> activate
+'pause' : deactivate
+'unpause' : activate
+'shutdown' : deactivate -> cleanup -> shutdown
 
-configure (1) -> activate (3) -> deactivate (4) -> cleanup (2) -> shutdown (5)
+
+The coordinator node will send a command out of sequence if you tell it to and everything will crash. Might be 
+nice to add protection against that in the future, but for now just be careful.
+
+Pause can only be run while active and unpause only while paused.
+
+Shutdown can only be run while active, not paused.
 _____________________________________________________________________________________
 _____________________________________________________________________________________
 Maintainer - Nathan Martin - martnat8@oregonstate.edu
