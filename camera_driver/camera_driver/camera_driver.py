@@ -78,8 +78,6 @@ class CameraDriver(LifecycleNode):
 		# Create a timer using the frequency parameter
 		self.timer = self.create_timer(timer_period, self.timer_callback, autostart=False)
 
-		self.get_logger().info('After timer')
-
 		return super().on_configure(previous_state)
 
 

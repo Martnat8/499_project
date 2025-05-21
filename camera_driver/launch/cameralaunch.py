@@ -41,9 +41,9 @@ def generate_launch_description():
         launch_ros.actions.Node(
             package='lifecycle_coordinator',
             executable='lifecycle_coordinator',
-            # parameters= [{
-            #     'node_names': ['camera_driver', 'periodic_screenshot'],
-            # }],          
+            parameters= [{
+                'node_names': ['camera_driver', 'periodic_screenshot'],
+            }],          
         ),
 
         launch_ros.actions.Node(

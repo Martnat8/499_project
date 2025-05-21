@@ -14,6 +14,13 @@ These are the different commands you can pass in the service. Each will move thr
 'unpause' : activate
 'shutdown' : deactivate -> cleanup -> shutdown
 
+
+The coordinator node will send a command out of sequence if you tell it to and everything will crash. Might be 
+nice to add protection against that in the future, but for now just be careful.
+
+Pause can only be run while active and unpause only while paused.
+
+Shutdown can only be run while active, not paused.
 _____________________________________________________________________________________
 _____________________________________________________________________________________
 Maintainer - Nathan Martin - martnat8@oregonstate.edu
