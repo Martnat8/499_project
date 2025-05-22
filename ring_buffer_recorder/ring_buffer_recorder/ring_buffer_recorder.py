@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 
-# Subscribes to an image topic and saves an image to disk at a parameterized
-# rate and quality
+# Subscribes to an image topic and video to disk of a certain length
+# Appends and removes frames from the file on disk so that it's safe
+# from the node crashing
 #
-# periodic_screenshot.py
+# camera_driver.py
 #
 # Nathan Martin
 
@@ -14,6 +15,7 @@ import os
 import rclpy
 from rclpy.node import Node
 from cv_bridge import CvBridge
+from collections import deque
 from rclpy.lifecycle import LifecycleNode, TransitionCallbackReturn
 from sensor_msgs.msg import Image
 
@@ -23,38 +25,43 @@ class PeriodicScreenshot(LifecycleNode):
 	def __init__(self):
 
 		# Initialize the parent class of name oscope
-		super().__init__('periodic_screenshot')
+		super().__init__('ring_buffer_recorder')
 
 		# Declaring parameters
 		self.declare_parameter('topic_name', '/raw_image_out')
-		self.declare_parameter('timer_interval', 30)
-		self.declare_parameter('save_name', 'test_img')
+		self.declare_parameter('fps', 15)  # Should match camera_driver output
+		self.declare_parameter('video_length_s', 60)
+		self.declare_parameter('num_videos', 3)
+		self.declare_parameter('codec', 'MJPEG')
+		self.declare_parameter('save_name', 'test_video')
 		self.declare_parameter('save_directory', '.')
 
 	def on_configure(self, previous_state):
 		
-		self.get_logger().info('Configuring Periodic Screenshot')
+		self.get_logger().info('Configuring Ring Buffer Recorder')
 
 		# Use CV Bridge to convert between ROS 2 and OpenCV images
 		self.bridge = CvBridge()
 
 		# Pull out parameters to determine capture parameters
 		topic = self.get_parameter('topic_name').value
-		timer_interval = self.get_parameter('timer_interval').value
+		fps = self.get_parameter('fps').value
+		video_length = self.get_parameter('video_length_s').value
+		self.num_videos = self.get_parameter('num_videos').value
+		self.codec = self.get_parameter('codec').value
 		self.save_name = self.get_parameter('save_name').value
 		self.save_directory = self.get_parameter('save_directory').value
 
+		self.is_recording = False
+
+		# Num frames is used to control the length of each saved video
+		num_frames = fps * video_length 
+
+		# We'll use deque to controll the buffer
+		self.video_buffer = deque(maxlen= num_frames)
+
 		# Create the subscriber
 		self.sub = self.create_subscription(Image, topic, self.callback, 10)
-
-		# Counter to track saved files
-		self.counter = 0
-
-		# Variable to hold previous image message
-		self.last_img = None
-
-		# Create a timer using the frequency parameter
-		self.timer = self.create_timer(timer_interval, self.timer_callback, autostart=False)
 
 		# Establish filepaths
 		os.makedirs(self.save_directory, exist_ok=True)
@@ -66,8 +73,8 @@ class PeriodicScreenshot(LifecycleNode):
 	def on_activate(self, previous_state):
 		self.get_logger().info('Activating')
 
-		# Start timer for callback
-		self.timer.reset()
+		# Turn on video recording to disk
+		self.is_recording = True
 
 		return super().on_activate(previous_state)
 	
@@ -75,8 +82,8 @@ class PeriodicScreenshot(LifecycleNode):
 	def on_deactivate(self, previous_state):
 		self.get_logger().info('Deactivating')
 
-		# Pause the timer
-		self.timer.cancel()
+		# Turn off video recording to disk
+		self.is_recording = False
 
 		return super().on_deactivate(previous_state)
 	
@@ -84,10 +91,6 @@ class PeriodicScreenshot(LifecycleNode):
 	def on_cleanup(self, previous_state):
 		self.get_logger().info('Cleaning up')
 
-		# Get rid of the timer
-		self.destroy_timer(self.timer)
-
-		# Get rid of the subscription
 		self.destroy_subscription(self.sub)
 
 		return TransitionCallbackReturn.SUCCESS
@@ -96,10 +99,6 @@ class PeriodicScreenshot(LifecycleNode):
 	def on_shutdown(self, previous_state):
 		self.get_logger().info('Shutting down')
 		
-		# Get rid of the timer
-		self.destroy_timer(self.timer)
-
-		# Get rid of the subscription
 		self.destroy_subscription(self.sub)
 
 		return TransitionCallbackReturn.SUCCESS
@@ -110,29 +109,15 @@ class PeriodicScreenshot(LifecycleNode):
 
 		return TransitionCallbackReturn.ERROR
 
-	# Callback saves each image in memory to save with timer callback later
+	
 	def callback(self, msg):
 
-		self.last_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+		if self.is_recording:
 
+			# Grab the frame from message and convert back to OpenCV format
+			frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+			self.buffer.append(frame)
 
-	# This callback will be called every time the timer fires. Adjusts the file name
-	# with a counter and uses imwrite to save to disk
-	def timer_callback(self):
-		
-		if self.last_img is None:
-			return
-
-		self.counter += 1
-
-		file_name = f'{self.save_name}_{self.counter}.png'
-
-		full_path = os.path.join(self.save_directory, file_name)
-
-		ok = cv2.imwrite(full_path, self.last_img)
-
-		if not ok:
-			self.get_logger().error(f"Failed to save image to {file_name}")
 
 
 def main(args=None):

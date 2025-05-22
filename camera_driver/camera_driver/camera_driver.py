@@ -34,7 +34,7 @@ class CameraDriver(LifecycleNode):
 
 	def on_configure(self, previous_state):
 		
-		self.get_logger().info('Configuring')
+		self.get_logger().info('Configuring Camera Driver')
 
 		# Pull out parameters to determine capture parameters
 		self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
