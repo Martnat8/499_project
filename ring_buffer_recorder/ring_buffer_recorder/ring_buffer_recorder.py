@@ -19,6 +19,9 @@ from collections import deque
 from rclpy.lifecycle import LifecycleNode, TransitionCallbackReturn
 from sensor_msgs.msg import Image
 
+# Import service
+from project_interfaces.srv import SaveSrv
+
 
 
 class PeriodicScreenshot(LifecycleNode):
@@ -60,8 +63,13 @@ class PeriodicScreenshot(LifecycleNode):
 		# We'll use deque to controll the buffer
 		self.video_buffer = deque(maxlen= num_frames)
 
+		# Counter used when saving multiple files
+		self.counter = 0
+
 		# Create the subscriber
 		self.sub = self.create_subscription(Image, topic, self.callback, 10)
+
+		self.service = self.create_service(SaveSrv, 'save_request', self.service_callback)
 
 		# Establish filepaths
 		os.makedirs(self.save_directory, exist_ok=True)
@@ -118,6 +126,13 @@ class PeriodicScreenshot(LifecycleNode):
 			frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
 			self.buffer.append(frame)
 
+	def service_callback(self, request, response):
+
+		file_name = f'{self.save_name}_{self.counter}.avi'
+
+		full_path = os.path.join(self.save_directory, file_name)
+
+		# Need to finish here
 
 
 def main(args=None):
