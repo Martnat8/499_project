@@ -90,6 +90,7 @@ class LifecycleCoordinator(Node):
 
 
 
+	# Grabs the state id, sends the request and attaches callbacks
 	def _launch_step(self):
 
 		# Step index is used to know if we've completed all commands
@@ -107,14 +108,14 @@ class LifecycleCoordinator(Node):
 		for fut in futures:
 			fut.add_done_callback(self._on_step_done)
 
-
+	# Checks transition success and launches next step or drops out if needed
 	def _on_step_done(self, fut):
 
 		# ignore any calls once we’ve advanced past the last step
 		if self.step_index >= len(self.current_sequence):
 			return
 
-		# Only run when all futures from the last change_state have finished
+		# Silently bail out if all of the callbacks are not finished
 		if not all(f.done() for f in self.responses):
 			return  
 
@@ -129,7 +130,7 @@ class LifecycleCoordinator(Node):
 		self._launch_step()
 
 
-	# This wraps up the state change request.
+	# Make a call for each state in the client list and assign futures.
 	def change_state(self, state):
 		request = ChangeState.Request()
 		request.transition.id = state
