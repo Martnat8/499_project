@@ -25,7 +25,18 @@ ros2 lifecycle set /camera_driver cleanup
 # Shutdown permanently (moves to “finalized”)
 ros2 lifecycle set /camera_driver shutdown
 
+
 _____________________________________________________________________________________
+
+# Parameters and their defaults:
+
+'frame_id', 'camera'
+'device_id', 0
+'fps', 15.0
+'encoding', 'bgr8'
+'frame_width', 1280
+'frame_height', 720
+'topic_name', '/raw_image_out'
 _____________________________________________________________________________________
 Maintainer - Nathan Martin - martnat8@oregonstate.edu
 _____________________________________________________________________________________

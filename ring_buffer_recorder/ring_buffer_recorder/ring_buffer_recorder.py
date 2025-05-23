@@ -13,7 +13,6 @@
 import cv2
 import os
 import rclpy
-from rclpy.node import Node
 from cv_bridge import CvBridge
 from collections import deque
 from rclpy.lifecycle import LifecycleNode, TransitionCallbackReturn
@@ -24,7 +23,7 @@ from project_interfaces.srv import SaveSrv
 
 
 
-class PeriodicScreenshot(LifecycleNode):
+class BufferRecorder(LifecycleNode):
 	def __init__(self):
 
 		# Initialize the parent class of name oscope
@@ -34,8 +33,7 @@ class PeriodicScreenshot(LifecycleNode):
 		self.declare_parameter('topic_name', '/raw_image_out')
 		self.declare_parameter('fps', 15)  # Should match camera_driver output
 		self.declare_parameter('video_length_s', 60)
-		self.declare_parameter('num_videos', 3)
-		self.declare_parameter('codec', 'MJPEG')
+		self.declare_parameter('codec', 'MJPG')
 		self.declare_parameter('save_name', 'test_video')
 		self.declare_parameter('save_directory', '.')
 
@@ -48,9 +46,8 @@ class PeriodicScreenshot(LifecycleNode):
 
 		# Pull out parameters to determine capture parameters
 		topic = self.get_parameter('topic_name').value
-		fps = self.get_parameter('fps').value
+		self.fps = self.get_parameter('fps').value
 		video_length = self.get_parameter('video_length_s').value
-		self.num_videos = self.get_parameter('num_videos').value
 		self.codec = self.get_parameter('codec').value
 		self.save_name = self.get_parameter('save_name').value
 		self.save_directory = self.get_parameter('save_directory').value
@@ -58,10 +55,12 @@ class PeriodicScreenshot(LifecycleNode):
 		self.is_recording = False
 
 		# Num frames is used to control the length of each saved video
-		num_frames = fps * video_length 
+		num_frames = int(self.fps * video_length) 
 
 		# We'll use deque to controll the buffer
 		self.video_buffer = deque(maxlen= num_frames)
+
+		self.fourcc = cv2.VideoWriter_fourcc(*self.codec)
 
 		# Counter used when saving multiple files
 		self.counter = 0
@@ -99,14 +98,16 @@ class PeriodicScreenshot(LifecycleNode):
 	def on_cleanup(self, previous_state):
 		self.get_logger().info('Cleaning up')
 
+		self.destroy_service(self.service)
 		self.destroy_subscription(self.sub)
 
 		return TransitionCallbackReturn.SUCCESS
 
-	
+
 	def on_shutdown(self, previous_state):
 		self.get_logger().info('Shutting down')
-		
+
+		self.destroy_service(self.service)		
 		self.destroy_subscription(self.sub)
 
 		return TransitionCallbackReturn.SUCCESS
@@ -124,22 +125,48 @@ class PeriodicScreenshot(LifecycleNode):
 
 			# Grab the frame from message and convert back to OpenCV format
 			frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-			self.buffer.append(frame)
+			self.video_buffer.append(frame)
 
 	def service_callback(self, request, response):
 
-		file_name = f'{self.save_name}_{self.counter}.avi'
+		# Check if buffer is empty
+		if not self.video_buffer:
+			response.success = False
+			response.result = "Buffer empty, nothing to save"
+			return response
 
+		# Create file name from counter and build path
+		file_name = f'{self.save_name}_{self.counter}.avi'
 		full_path = os.path.join(self.save_directory, file_name)
 
-		# Need to finish here
+		# Pull existing image from the first frame's shape
+		h,w,_ = self.video_buffer[0].shape
 
+		# Create output device
+		out = cv2.VideoWriter(full_path, self.fourcc, self.fps, (w,h))
+
+		# Iterate through buffer and write to disk
+		for frame in self.video_buffer:
+			out.write(frame)
+
+		# Release device
+		out.release()
+
+		# Increment counter for next file name 
+		self.counter += 1
+
+		# Fill out response
+		response.success = True
+
+		response.result = f"Saved video to {full_path}"
+
+		return response
 
 def main(args=None):
 	
 	rclpy.init(args=args)
 
-	subscriber = PeriodicScreenshot()
+	subscriber = BufferRecorder()
 
 	rclpy.spin(subscriber)
 

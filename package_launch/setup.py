@@ -1,10 +1,10 @@
-from setuptools import find_packages, setup
 
-# We're going to use these to install the launch files.
 import os
 from glob import glob
 
-package_name = 'camera_driver'
+from setuptools import find_packages, setup
+
+package_name = 'package_launch'
 
 setup(
     name=package_name,
@@ -19,17 +19,17 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*.py'))),
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*.xml'))),
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*.yaml'))),
+    
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Teft',
     maintainer_email='martnat8@oregonstate.edu',
-    description='A basic camera driver of a UVC compliant camera',
+    description='Package that launches all needed nodes for ROB 499 Final Project',
     license='BSD-3-Clause',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_driver = camera_driver.camera_driver:main',
         ],
     },
 )

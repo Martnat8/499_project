@@ -28,10 +28,10 @@ class LifecycleCoordinator(Node):
 
 		# Parameter is an list of lifecycle enabled nodes.
 		self.declare_parameter('node_names', ['camera_driver'])
-		node_names = self.get_parameter('node_names').value
+		self.node_names = self.get_parameter('node_names').value
 
 		# Make a service clients for each of the nodes we want to coordinate.
-		self.client_list = [self.create_client(ChangeState, f'{name}/change_state') for name in node_names]
+		self.client_list = [self.create_client(ChangeState, f'{name}/change_state') for name in self.node_names]
 
 		# Wait until the service is available and the client is connected.
 		for client in self.client_list:
@@ -119,10 +119,19 @@ class LifecycleCoordinator(Node):
 		if not all(f.done() for f in self.responses):
 			return  
 
-		# Check success
-		if not all(f.result().success for f in self.responses):
-			self.get_logger().error(f"Step {self.current_sequence[self.step_index]} failed")
+		# If we fail report it for debugging
+		failures = []
+		for name, fut in zip(self.node_names, self.responses):
+			res = fut.result() 
+			if not res.success:
+				failures.append(name)
+
+		if failures:
+			self.get_logger().error(
+			f"Step '{self.current_sequence[self.step_index]}' failed on nodes: {failures}"
+			)
 			return
+
 
 		# Move to the next step
 		self.get_logger().info(f"Step {self.current_sequence[self.step_index]} succeeded")
