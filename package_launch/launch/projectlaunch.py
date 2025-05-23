@@ -31,7 +31,7 @@ def generate_launch_description():
             }],          
         ),
 
-        # This is a basic launch file for the camera_driver node
+        # Launch and adjust parameters for Camera_Driver
         launch_ros.actions.Node(
             package='camera_driver',
             executable='camera_driver',
@@ -46,7 +46,7 @@ def generate_launch_description():
             }],          
         ),
 
-        # This is a basic launch file for the camera_driver node
+        # Launch and adjust parameters for Ring_Buffer_Recorder
         launch_ros.actions.Node(
             package='ring_buffer_recorder',
             executable='ring_buffer_recorder',
@@ -60,12 +60,13 @@ def generate_launch_description():
             }],          
         ),
 
+        # Launch and adjust parameters for Periodic_Screenshot
         launch_ros.actions.Node(
             package='periodic_screenshot',
             executable='periodic_screenshot',
             parameters= [{
                 'topic_name': '/raw_image_out',
-                'timer_interval': 30,
+                'timer_interval': 10,
                 'save_name': 'test_img',
                 'save_directory': os.path.expanduser('~/junk_imgs'),
             }],          
