@@ -10,7 +10,6 @@
 
 import rclpy
 import cv2
-from rclpy.node import Node
 from cv_bridge import CvBridge
 from rclpy.lifecycle import LifecycleNode, TransitionCallbackReturn
 from sensor_msgs.msg import Image
@@ -152,23 +151,18 @@ class CameraDriver(LifecycleNode):
 		
 
 
-# Basic ROS2 Setup function
+
 def main(args=None):
 	
-	# Initialize rclpy.  We should do this every time.
 	rclpy.init(args=args)
 
-	# Make a node class.
 	publisher = CameraDriver()
 
-	# Handover to ROS2
 	rclpy.spin(publisher)
 
-	# Make sure we shutdown everything cleanly.	
 	rclpy.shutdown()
 
 
-# If we run the node as a script, then we're going to start here.
 if __name__ == '__main__':
 	
 	main()

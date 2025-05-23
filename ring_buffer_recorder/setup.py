@@ -13,7 +13,7 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Nathan Martin',
+    maintainer='Nathan M',
     maintainer_email='martnat8@oregonstate.edu',
     description='A lifecycle compliant node that creates a buffer of images from a subscription topic and ' \
     'on service call saves that to disk',

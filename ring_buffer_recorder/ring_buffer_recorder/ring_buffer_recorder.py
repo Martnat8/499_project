@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 
-# Subscribes to an image topic and video to disk of a certain length
-# Appends and removes frames from the file on disk so that it's safe
-# from the node crashing
+# Subscribes to an image topic and, through a service call, saves the 
+# specified number of frames to disk.
 #
 # camera_driver.py
 #

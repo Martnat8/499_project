@@ -1,8 +1,11 @@
-# Package_launch
+# project_interfaces
 
-A small package that only includes the launch file for ROB499 Final Project. If you want to adjust and
-parameters it can be easily done from this launch file.
+The **project_interfaces** package defines custom ROS 2 service interfaces shared across the system:
 
-After building and sourcing the work environment, the following command will bring everything up.
+- **ChangeStateSrv**  
+  Used by the lifecycle coordinator to request lifecycle transitions on one or more nodes
 
-ros2 launch package_launch projectlaunch.py
+- **SaveSrv**  
+  Used by the ring buffer recorder to trigger dumping its in-memory video buffer to disk.
+
+

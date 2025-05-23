@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# This node is a lifecycle coordinator. 
+# This node is a lifecycle coordinator that can control any number of lifecycle enabled nodes.
+# You'll need to update parameters as you want to add nodes into it's control.
 #
 # lifecycle_coordinator.py
 #
@@ -116,10 +117,10 @@ class LifecycleCoordinator(Node):
 			return
 
 		# Silently bail out if all of the callbacks are not finished
-		if not all(f.done() for f in self.responses):
+		if not all(fut.done() for fut in self.responses):
 			return  
 
-		# If we fail report it for debugging
+		# If we fail report failure and name of node for debugging
 		failures = []
 		for name, fut in zip(self.node_names, self.responses):
 			res = fut.result() 
@@ -153,16 +154,12 @@ class LifecycleCoordinator(Node):
 
 def main(args=None):
 	
-	# Initialize rclpy.  We should do this every time.
 	rclpy.init(args=args)
 
-	# Make a node class.
 	coordinator = LifecycleCoordinator()
 
-	# Handover to ROS2
 	rclpy.spin(coordinator)
-
-	# Make sure we shutdown everything cleanly.	
+	
 	rclpy.shutdown()
 
 

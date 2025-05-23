@@ -1,23 +1,22 @@
-# The launch file for camera_driver
+# The launch file for ROB499 Final Project
 #
-# cameralaunch.py
+# projectlaunch.py
 #
 # Nathan Martin
 
 
-# We need to import the launch system modules.  There's a generic launch
-# system, in launch, and some ROS-specific stuff, in launch_ros.]
+
 import os
 import launch
 import launch_ros.actions
 
 
 
-# You need to define this function, which is loaded by the launch system.  The function
-# returns a list of nodes that you want to run.
+
 def generate_launch_description():
     return launch.LaunchDescription([
 
+        # Launch and adjust parameters for Lifecycle_Coordinator
         launch_ros.actions.Node(
             package='lifecycle_coordinator',
             executable='lifecycle_coordinator',
