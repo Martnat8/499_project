@@ -30,7 +30,7 @@ class BufferRecorder(LifecycleNode):
 
 		# Declaring parameters
 		self.declare_parameter('topic_name', '/raw_image_out')
-		self.declare_parameter('fps', 15)  # Should match camera_driver output
+		self.declare_parameter('fps', 15.0)  # Should match camera_driver output
 		self.declare_parameter('video_length_s', 60)
 		self.declare_parameter('codec', 'MJPG')
 		self.declare_parameter('save_name', 'test_video')
@@ -141,15 +141,30 @@ class BufferRecorder(LifecycleNode):
 		# Pull existing image from the first frame's shape
 		h,w,_ = self.video_buffer[0].shape
 
-		# Create output device
-		out = cv2.VideoWriter(full_path, self.fourcc, self.fps, (w,h))
+		try:
+			# Create output device
+			out = cv2.VideoWriter(full_path, self.fourcc, self.fps, (w,h))
 
-		# Iterate through buffer and write to disk
-		for frame in self.video_buffer:
-			out.write(frame)
+			if not out.isOpened():
+				raise RuntimeError("cv2.VideoWriter failed to open")
 
-		# Release device
-		out.release()
+			# Iterate through buffer and write to disk
+			for frame in self.video_buffer:
+				out.write(frame)
+
+		# If writing error we report it to prevent node from crashing		
+		except Exception as e:
+			self.get_logger().error(f'Failed to save file at {full_path}: {e}')
+			response.success = False
+			response.result = f' Video write error {e}'
+			return response
+
+		finally:
+			try:
+				# Release device
+				out.release()
+			except Exception:
+				pass
 
 		# Increment counter for next file name 
 		self.counter += 1

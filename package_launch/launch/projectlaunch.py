@@ -51,7 +51,7 @@ def generate_launch_description():
             executable='ring_buffer_recorder',
             parameters= [{
                 'topic_name': '/raw_image_out',
-                'fps': 15,
+                'fps': 15.0,
                 'video_length_s': 60, 
                 'codec': 'MJPG',
                 'save_name': 'test_video',
