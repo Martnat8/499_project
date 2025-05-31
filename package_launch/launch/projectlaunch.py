@@ -56,7 +56,7 @@ def generate_launch_description():
                 'video_length_s': 60, 
                 'codec': 'MJPG',
                 'save_name': 'test_video',
-                'save_directory': os.path.expanduser('~/junk_imgs'), 
+                'save_directory': os.path.expanduser('~/junk_saves/videos'), 
             }],          
         ),
 
@@ -68,7 +68,7 @@ def generate_launch_description():
                 'topic_name': '/raw_image_out',
                 'timer_interval': 10,
                 'save_name': 'test_img',
-                'save_directory': os.path.expanduser('~/junk_imgs'),
+                'save_directory': os.path.expanduser('~/junk_saves/images'),
             }],          
         ),
 
@@ -79,7 +79,7 @@ def generate_launch_description():
             parameters=[{
                 'topics': ['/raw_image_out'],
                 'bag_name': 'test_bag',
-                'save_directory': os.path.expanduser('~/junk_imgs')
+                'save_directory': os.path.expanduser('~/junk_saves/bags')
             }],
           
         ),
