@@ -4,7 +4,7 @@
 # Subscribes to an image topic and saves an image to disk at a parameterized
 # rate and quality
 #
-# camera_driver.py
+# periodic_screenshot.py
 #
 # Nathan Martin
 
@@ -33,7 +33,7 @@ class PeriodicScreenshot(LifecycleNode):
 
 	def on_configure(self, previous_state):
 		
-		self.get_logger().info('Configuring')
+		self.get_logger().info('Configuring Periodic Screenshot')
 
 		# Use CV Bridge to convert between ROS 2 and OpenCV images
 		self.bridge = CvBridge()
@@ -110,13 +110,14 @@ class PeriodicScreenshot(LifecycleNode):
 
 		return TransitionCallbackReturn.ERROR
 
-	# This callback will be called whenever there's a new image on the topic.
+	# Callback saves each image in memory to save with timer callback later
 	def callback(self, msg):
 
 		self.last_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
 
 
-	# This callback will be called every time the timer fires.
+	# This callback will be called every time the timer fires. Adjusts the file name
+	# with a counter and uses imwrite to save to disk
 	def timer_callback(self):
 		
 		if self.last_img is None:
@@ -133,23 +134,17 @@ class PeriodicScreenshot(LifecycleNode):
 		if not ok:
 			self.get_logger().error(f"Failed to save image to {file_name}")
 
-# Basic ROS2 Setup function
+
 def main(args=None):
 	
-	# Initialize rclpy.  We should do this every time.
 	rclpy.init(args=args)
 
-	# Make a node class.
 	subscriber = PeriodicScreenshot()
 
-	# Handover to ROS2
 	rclpy.spin(subscriber)
 
-	# Make sure we shutdown everything cleanly.	
 	rclpy.shutdown()
 
-
-# If we run the node as a script, then we're going to start here.
 if __name__ == '__main__':
 	
 	main()

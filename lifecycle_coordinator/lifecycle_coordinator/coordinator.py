@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# This node is a lifecycle coordinator. 
+# This node is a lifecycle coordinator that can control any number of lifecycle enabled nodes.
+# You'll need to update parameters as you want to add nodes into it's control.
 #
 # lifecycle_coordinator.py
 #
@@ -28,10 +29,10 @@ class LifecycleCoordinator(Node):
 
 		# Parameter is an list of lifecycle enabled nodes.
 		self.declare_parameter('node_names', ['camera_driver'])
-		node_names = self.get_parameter('node_names').value
+		self.node_names = self.get_parameter('node_names').value
 
 		# Make a service clients for each of the nodes we want to coordinate.
-		self.client_list = [self.create_client(ChangeState, f'{name}/change_state') for name in node_names]
+		self.client_list = [self.create_client(ChangeState, f'{name}/change_state') for name in self.node_names]
 
 		# Wait until the service is available and the client is connected.
 		for client in self.client_list:
@@ -90,6 +91,7 @@ class LifecycleCoordinator(Node):
 
 
 
+	# Grabs the state id, sends the request and attaches callbacks
 	def _launch_step(self):
 
 		# Step index is used to know if we've completed all commands
@@ -107,21 +109,30 @@ class LifecycleCoordinator(Node):
 		for fut in futures:
 			fut.add_done_callback(self._on_step_done)
 
-
+	# Checks transition success and launches next step or drops out if needed
 	def _on_step_done(self, fut):
 
 		# ignore any calls once we’ve advanced past the last step
 		if self.step_index >= len(self.current_sequence):
 			return
 
-		# Only run when all futures from the last change_state have finished
-		if not all(f.done() for f in self.responses):
+		# Silently bail out if all of the callbacks are not finished
+		if not all(fut.done() for fut in self.responses):
 			return  
 
-		# Check success
-		if not all(f.result().success for f in self.responses):
-			self.get_logger().error(f"Step {self.current_sequence[self.step_index]} failed")
+		# If we fail report failure and name of node for debugging
+		failures = []
+		for name, fut in zip(self.node_names, self.responses):
+			res = fut.result() 
+			if not res.success:
+				failures.append(name)
+
+		if failures:
+			self.get_logger().error(
+			f"Step '{self.current_sequence[self.step_index]}' failed on nodes: {failures}"
+			)
 			return
+
 
 		# Move to the next step
 		self.get_logger().info(f"Step {self.current_sequence[self.step_index]} succeeded")
@@ -129,7 +140,7 @@ class LifecycleCoordinator(Node):
 		self._launch_step()
 
 
-	# This wraps up the state change request.
+	# Make a call for each state in the client list and assign futures.
 	def change_state(self, state):
 		request = ChangeState.Request()
 		request.transition.id = state
@@ -143,16 +154,12 @@ class LifecycleCoordinator(Node):
 
 def main(args=None):
 	
-	# Initialize rclpy.  We should do this every time.
 	rclpy.init(args=args)
 
-	# Make a node class.
 	coordinator = LifecycleCoordinator()
 
-	# Handover to ROS2
 	rclpy.spin(coordinator)
-
-	# Make sure we shutdown everything cleanly.	
+	
 	rclpy.shutdown()
 
 

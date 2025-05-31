@@ -4,7 +4,7 @@
   <name>periodic_screenshot</name>
   <version>0.1.0</version>
   <description>This node subscribes to a sensor_msgs/Image topic and saves an image to disk at a 
-    parameterized rate and quality</description>
+    parameterized rate</description>
   <maintainer email="martnat8@oregonstate.edu">Nathan M</maintainer>
   <license>BSD-3-Clause</license>
 

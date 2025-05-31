@@ -27,5 +27,7 @@ Maintainer - Nathan Martin - martnat8@oregonstate.edu
 _____________________________________________________________________________________
 License - BSD 3-Clause
 _____________________________________________________________________________________
-
+References:
+Largely iterative of in class supplied code.
+ChatGPT for syntax, debugging and understanding futures.
 

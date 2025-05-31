@@ -16,6 +16,7 @@ find_package(lifecycle_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/ChangeStateSrv.srv"
+  "srv/SaveSrv.srv"
   DEPENDENCIES builtin_interfaces lifecycle_msgs std_msgs
 )
 
@@ -24,5 +25,6 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
 
 ament_package()

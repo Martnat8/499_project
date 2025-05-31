@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>lifecycle_coordinator</name>
+  <name>ring_buffer_recorder</name>
   <version>0.1.0</version>
-  <description>A ROS2 lifecycle coordniator node that can control multiple nodes at a time</description>
+  <description>A lifecycle enabled ROS2 Node that keeps a running buffer of a image topic
+  and dumps it to disk when triggered by a service call</description>
   <maintainer email="martnat8@oregonstate.edu">Teft</maintainer>
   <license>BSD-3-Clause</license>
 
   <depend>rclpy</depend>
-  <depend>lifecycle_msgs</depend>
-  <depend>project_interfaces</depend>
+  <depend>cv_bridge</depend>
+  <depend>sensor_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

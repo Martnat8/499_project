@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'periodic_screenshot'
+package_name = 'ring_buffer_recorder'
 
 setup(
     name=package_name,
@@ -13,14 +13,15 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Teft',
+    maintainer='Nathan M',
     maintainer_email='martnat8@oregonstate.edu',
-    description='This node subscribes to a sensor_msgs/Image topic and saves an image to disk at a parameterized rate',
+    description='A lifecycle compliant node that creates a buffer of images from a subscription topic and ' \
+    'on service call saves that to disk',
     license='BSD-3-Clause',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'periodic_screenshot = periodic_screenshot.periodic_screenshot:main',
+            'ring_buffer_recorder = ring_buffer_recorder.ring_buffer_recorder:main',
         ],
     },
 )

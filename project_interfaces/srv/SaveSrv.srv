@@ -1,4 +1,4 @@
-string command
+bool save_request
 ---
 bool        success
 string       result
