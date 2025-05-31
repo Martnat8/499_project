@@ -11,7 +11,7 @@
 
 
 import rclpy
-import cv2
+import cv2 as cv
 import os
 import numpy as np
 from rclpy.node import Node
@@ -28,9 +28,6 @@ class SobelFilter(LifecycleNode):
 
 		# Declaring parameters
 		self.declare_parameter('topic_in', '/raw_image_out')
-		self.declare_parameter('save_name', 'sobel_test_img')
-		self.declare_parameter('save_directory', '.')
-		self.declare_parameter('save_to_disk', False)
 
 		# Boolean so that subscriber/publisher is controlled by lifecycle
 		self.is_active = False
@@ -41,18 +38,12 @@ class SobelFilter(LifecycleNode):
 
 		# Pull out parameters
 		topic_in = self.get_parameter('topic_in').value
-		self.save_name = self.get_parameter('save_name').value
-		self.save_directory = self.get_parameter('save_directory').value
-		self.is_saving = self.get_parameter('save_to_disk').value
 
 		# Create the subscriber and publisher
 		self.sub = self.create_subscription(Image, topic_in, self.callback, 10)
-		self.pub = self.create_lifecycle_publisher(Image, '/sobelX_out', 10)
-		self.pub = self.create_lifecycle_publisher(Image, '/sobely_out', 10)
-		self.pub = self.create_lifecycle_publisher(Image, '/sobelxy_out', 10)
-
-		# Establish filepaths
-		os.makedirs(self.save_directory, exist_ok=True)
+		self.pubx = self.create_lifecycle_publisher(Image, '/sobelX_out', 10)
+		self.puby = self.create_lifecycle_publisher(Image, '/sobely_out', 10)
+		self.pubxy = self.create_lifecycle_publisher(Image, '/sobelxy_out', 10)
 
 		return TransitionCallbackReturn.SUCCESS
 
@@ -77,7 +68,9 @@ class SobelFilter(LifecycleNode):
 
 		# Destroy subscriber and publisher
 		self.destroy_subscription(self.sub)
-		self.destroy_publisher(self.pub)
+		self.destroy_publisher(self.pubx)
+		self.destroy_publisher(self.puby)
+		self.destroy_publisher(self.pubxy)
 
 		return TransitionCallbackReturn.SUCCESS
 
@@ -88,7 +81,9 @@ class SobelFilter(LifecycleNode):
 
 		# Destroy subscriber and publisher		
 		self.destroy_subscription(self.sub)
-		self.destroy_publisher(self.pub)
+		self.destroy_publisher(self.pubx)
+		self.destroy_publisher(self.puby)
+		self.destroy_publisher(self.pubxy)
 
 		return TransitionCallbackReturn.SUCCESS
 
@@ -98,24 +93,41 @@ class SobelFilter(LifecycleNode):
 
 		return TransitionCallbackReturn.ERROR
 	
-		# Callback saves each image in memory to save with timer callback later
+	# Callback for the subscriber
 	def callback(self, msg):
 
 		if self.is_active:
 
-			
-
+			# Convert image message to cv2 image
 			img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
 
-			if self.is_saving:
+			# Protect against bad image loads
+			if img is None:
+				self.get_logger().warning('Error getting image for Sobel filter')
+				return
 
-				file_name = f'{self.bag_name}_{self.counter}'
+			img = cv.GaussianBlur(img, (3,3), 0)
 
-				self.bag_path = os.path.join(self.save_directory, file_name)
+			gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-				# Finish saving functionalty
+			sobelx = cv.Sobel(gray, cv.CV_16S, 0, 1, ksize=3)
+			sobely = cv.Sobel(gray, cv.CV_16S, 1, 0, ksize=3)
 
-			self.last_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+			abs_grad_x = cv.convertScaleAbs(sobelx)
+			abs_grad_y = cv.convertScaleAbs(sobely)
+
+			grad_xy = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
+
+			# Convert back to messages to publish
+
+			sobelx_msg = self.bridge.cv2_to_imgmsg(abs_grad_x, encoding= self.encoding_type)
+			sobely_msg = self.bridge.cv2_to_imgmsg(abs_grad_y, encoding= self.encoding_type)
+			sobelxy_msg = self.bridge.cv2_to_imgmsg(grad_xy, encoding= self.encoding_type)
+
+			# Publish the message
+			self.pubx.publish(sobelx_msg)
+			self.puby.publish(sobely_msg)
+			self.pubxy.publish(sobelxy_msg)
 
 
 
