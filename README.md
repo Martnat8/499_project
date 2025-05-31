@@ -19,6 +19,8 @@ are curious about parameters or what they do in detail.
 **Ring Buffer Recorder:** Buffers image frames from a subscribed topic and saves a video to disc upon 
   a service call.
 
+**Bag Recorder:** Records a bag from a list of topics that you can pass in as parameters.
+
 --------------------------------------------------------------------------------------------------
 
 # Usage:

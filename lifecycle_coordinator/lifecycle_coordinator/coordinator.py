@@ -36,8 +36,9 @@ class LifecycleCoordinator(Node):
 
 		# Wait until the service is available and the client is connected.
 		for client in self.client_list:
+			service_name = client.srv_name
 			while not client.wait_for_service(timeout_sec=1):
-				self.get_logger().info('waiting for lifecycle node to become available')
+				self.get_logger().info(f'Waiting for lifecycle node to become available: {service_name}')
 
 		# Create subscriber so that we can control lifecycle nodes
 		self.service = self.create_service(ChangeStateSrv, 'lifecycle_control', self.service_callback)
