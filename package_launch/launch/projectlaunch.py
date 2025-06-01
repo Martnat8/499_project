@@ -27,6 +27,7 @@ def generate_launch_description():
                     'periodic_screenshot',
                     'ring_buffer_recorder',
                     'bag_recorder',
+                    'sobel_filter',
                     ],
             }],          
         ),
@@ -79,11 +80,20 @@ def generate_launch_description():
             parameters=[{
                 'topics': ['/raw_image_out'],
                 'bag_name': 'test_bag',
-                'save_directory': os.path.expanduser('~/junk_saves/bags')
+                'save_directory': os.path.expanduser('~/junk_saves/bags'),
+                'is_saving': True,
+            }],
+        ),
+
+        # Launch and adjust parameters for Sobel Filter
+        launch_ros.actions.Node(
+            package='sobel_filter',
+            executable='sobel_filter',
+            parameters=[{
+                'topics': ['/raw_image_out'],
             }],
           
         ),
-
 
         launch_ros.actions.Node(
             package='rviz2',

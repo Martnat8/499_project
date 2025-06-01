@@ -45,6 +45,9 @@ class SobelFilter(LifecycleNode):
 		self.puby = self.create_lifecycle_publisher(Image, '/sobely_out', 10)
 		self.pubxy = self.create_lifecycle_publisher(Image, '/sobelxy_out', 10)
 
+		# Use CV Bridge to convert between ROS 2 and OpenCV images
+		self.bridge = CvBridge()
+
 		return TransitionCallbackReturn.SUCCESS
 
 	def on_activate(self, previous_state):
@@ -99,7 +102,7 @@ class SobelFilter(LifecycleNode):
 		if self.is_active:
 
 			# Convert image message to cv2 image
-			img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+			img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='mono8')
 
 			# Protect against bad image loads
 			if img is None:
@@ -120,9 +123,9 @@ class SobelFilter(LifecycleNode):
 
 			# Convert back to messages to publish
 
-			sobelx_msg = self.bridge.cv2_to_imgmsg(abs_grad_x, encoding= self.encoding_type)
-			sobely_msg = self.bridge.cv2_to_imgmsg(abs_grad_y, encoding= self.encoding_type)
-			sobelxy_msg = self.bridge.cv2_to_imgmsg(grad_xy, encoding= self.encoding_type)
+			sobelx_msg = self.bridge.cv2_to_imgmsg(abs_grad_x, encoding= 'mono8')
+			sobely_msg = self.bridge.cv2_to_imgmsg(abs_grad_y, encoding= 'mono8')
+			sobelxy_msg = self.bridge.cv2_to_imgmsg(grad_xy, encoding= 'mono8')
 
 			# Publish the message
 			self.pubx.publish(sobelx_msg)

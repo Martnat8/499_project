@@ -19,7 +19,10 @@ are curious about parameters or what they do in detail.
 **Ring Buffer Recorder:** Buffers image frames from a subscribed topic and saves a video to disc upon 
   a service call.
 
-**Bag Recorder:** Records a bag from a list of topics that you can pass in as parameters.
+**Bag Recorder:** Records a bag from a list of topics that you can pass in as parameters. Has a 
+  parameter that lets you turn on and off bag saving but is not a dynamic parameter. It's just 
+  meant to allow me to turn off bag saving if I don't want it on while keeping the structure of the
+  launch file. If you want to record with it you need to set true and relaunch.
 
 --------------------------------------------------------------------------------------------------
 
@@ -49,6 +52,8 @@ Pause can only be run while active and unpause only while paused. Shutdown can o
 The service call takes no request right now, just needs a trigger.
 
 ros2 service call /save_request project_interfaces/srv/SaveSrv "{}"
+
+
 
 
 
