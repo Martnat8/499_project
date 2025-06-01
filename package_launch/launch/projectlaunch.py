@@ -81,7 +81,7 @@ def generate_launch_description():
                 'topics': ['/raw_image_out'],
                 'bag_name': 'test_bag',
                 'save_directory': os.path.expanduser('~/junk_saves/bags'),
-                'is_saving': True,
+                'is_saving': False,
             }],
         ),
 

@@ -44,12 +44,13 @@ class BagRecorder(LifecycleNode):
 		self.save_directory = self.get_parameter('save_directory').value
 		self.is_saving = self.get_parameter('is_saving').value
 
-		# Establish filepaths
-		os.makedirs(self.save_directory, exist_ok=True)
+		if self.is_saving:
 
-		# Counter to make sure we don't override bags if paused.
-		self.counter = 1
+			# Establish filepaths
+			os.makedirs(self.save_directory, exist_ok=True)
 
+			# Counter to make sure we don't override bags if paused.
+			self.counter = 1
 
 		return TransitionCallbackReturn.SUCCESS
 

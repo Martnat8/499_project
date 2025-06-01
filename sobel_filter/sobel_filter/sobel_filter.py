@@ -12,9 +12,6 @@
 
 import rclpy
 import cv2 as cv
-import os
-import numpy as np
-from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from rclpy.lifecycle import LifecycleNode, TransitionCallbackReturn
@@ -102,7 +99,7 @@ class SobelFilter(LifecycleNode):
 		if self.is_active:
 
 			# Convert image message to cv2 image
-			img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='mono8')
+			img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
 
 			# Protect against bad image loads
 			if img is None:
