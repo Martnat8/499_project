@@ -24,6 +24,9 @@ are curious about parameters or what they do in detail.
   meant to allow me to turn off bag saving if I don't want it on while keeping the structure of the
   launch file. If you want to record with it you need to set true and relaunch.
 
+**Sobel Filter:** A node that takes in an image topic and republishes the x, y and xy sobel filtered
+  variants of the image. A lifecycle enabled node
+
 --------------------------------------------------------------------------------------------------
 
 # Usage:
