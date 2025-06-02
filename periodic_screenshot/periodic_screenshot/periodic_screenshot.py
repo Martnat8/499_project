@@ -22,7 +22,7 @@ from sensor_msgs.msg import Image
 class PeriodicScreenshot(LifecycleNode):
 	def __init__(self):
 
-		# Initialize the parent class of name oscope
+		# Initialize the parent class 
 		super().__init__('periodic_screenshot')
 
 		# Declaring parameters

@@ -20,7 +20,7 @@ from rclpy.lifecycle import LifecycleNode, TransitionCallbackReturn
 class SobelFilter(LifecycleNode):
 	def __init__(self):
 
-		# Initialize the parent class of name oscope
+		# Initialize the parent class
 		super().__init__('sobel_filter')
 
 		# Declaring parameters
@@ -37,10 +37,11 @@ class SobelFilter(LifecycleNode):
 		topic_in = self.get_parameter('topic_in').value
 
 		# Create the subscriber and publisher
-		self.sub = self.create_subscription(Image, topic_in, self.callback, 10)
+		self.sub = self.create_subscription(Image, topic_in, self.callback, 1)
 		self.pubx = self.create_lifecycle_publisher(Image, '/sobelX_out', 10)
 		self.puby = self.create_lifecycle_publisher(Image, '/sobely_out', 10)
 		self.pubxy = self.create_lifecycle_publisher(Image, '/sobelxy_out', 10)
+		self.pubedge = self.create_lifecycle_publisher(Image, '/canny_edge_out', 10)
 
 		# Use CV Bridge to convert between ROS 2 and OpenCV images
 		self.bridge = CvBridge()
@@ -71,6 +72,7 @@ class SobelFilter(LifecycleNode):
 		self.destroy_publisher(self.pubx)
 		self.destroy_publisher(self.puby)
 		self.destroy_publisher(self.pubxy)
+		self.destroy_publisher(self.pubedge)
 
 		return TransitionCallbackReturn.SUCCESS
 
@@ -84,6 +86,7 @@ class SobelFilter(LifecycleNode):
 		self.destroy_publisher(self.pubx)
 		self.destroy_publisher(self.puby)
 		self.destroy_publisher(self.pubxy)
+		self.destroy_publisher(self.pubedge)
 
 		return TransitionCallbackReturn.SUCCESS
 
@@ -101,10 +104,16 @@ class SobelFilter(LifecycleNode):
 			# Convert image message to cv2 image
 			img = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
 
+
+
 			# Protect against bad image loads
 			if img is None:
 				self.get_logger().warning('Error getting image for Sobel filter')
 				return
+
+			# Use opencv canny edge detection and make a message
+			canny = cv.Canny(img, 75, 150)
+			canny_msg = self.bridge.cv2_to_imgmsg(canny, encoding= 'mono8')
 
 			img = cv.GaussianBlur(img, (3,3), 0)
 
@@ -128,7 +137,7 @@ class SobelFilter(LifecycleNode):
 			self.pubx.publish(sobelx_msg)
 			self.puby.publish(sobely_msg)
 			self.pubxy.publish(sobelxy_msg)
-
+			self.pubedge.publish(canny_msg)
 
 
 def main(args=None):

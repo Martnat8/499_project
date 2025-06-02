@@ -25,7 +25,7 @@ from project_interfaces.srv import SaveSrv
 class BufferRecorder(LifecycleNode):
 	def __init__(self):
 
-		# Initialize the parent class of name oscope
+		# Initialize the parent class 
 		super().__init__('ring_buffer_recorder')
 
 		# Declaring parameters

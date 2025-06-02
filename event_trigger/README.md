@@ -1,12 +1,13 @@
-# Sobel Filter
+# Event Trigger
 
-A **Sobel Filter** node that takes in an image topic and republishes the sobel x, y and xy filtered images.
+An **Event Trigger** node triggers the Rign Buffer Recorder node on a timer, has one parameter that determines 
+the timer interval.
 
 ## Parameters
 
 | Name              | Type    | Default             | Description                                        |
 |-------------------|---------|---------------------|----------------------------------------------------|
-| `topic_in`        | string  | `/raw_image_out`    | A topic to run the filter on                       |
+| `timer_interval`  | float   | `15.0`              | Timer interval in seconds to trigger other node    |
 
 _____________________________________________________________________________________
 _____________________________________________________________________________________
@@ -15,5 +16,5 @@ ________________________________________________________________________________
 License - BSD 3-Clause
 _____________________________________________________________________________________
 References:
-https://docs.opencv.org/4.x/d2/d2c/tutorial_sobel_derivatives.html
+
 Lifecycle node structure influenced largely from class supplied code
