@@ -112,7 +112,7 @@ class SobelFilter(LifecycleNode):
 				return
 
 			# Use opencv canny edge detection and make a message
-			canny = cv.Canny(img, 75, 150)
+			canny = cv.Canny(img, 100, 200)
 			canny_msg = self.bridge.cv2_to_imgmsg(canny, encoding= 'mono8')
 
 			img = cv.GaussianBlur(img, (3,3), 0)

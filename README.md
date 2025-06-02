@@ -34,6 +34,10 @@ are curious about parameters or what they do in detail.
 colcon build
 source install/setup.bash
 
+# Check device (sometimes need to change id in launch file)
+v4l2-ctl --list-devices
+
+
 # Launch the whole suite of nodes:
 ros2 launch package_launch projectlaunch.py
 

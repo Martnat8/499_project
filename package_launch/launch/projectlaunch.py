@@ -28,6 +28,7 @@ def generate_launch_description():
                     'ring_buffer_recorder',
                     'bag_recorder',
                     'sobel_filter',
+                    'strain_logger',
                     ],
             }],          
         ),
@@ -92,7 +93,19 @@ def generate_launch_description():
             parameters=[{
                 'topics': ['/raw_image_out'],
             }],
-          
+        ),
+
+        # Launch and adjust parameters for strain_logger
+        launch_ros.actions.Node(
+            package='strain_logger',
+            executable='strain_logger',
+            parameters=[{
+                    'topic_in': '/canny_edge_out',
+                    'pix_to_mm': 0.1,
+                    'roi_width': 320,
+                    'roi_height': 480,
+                    'original_length': 10.0,
+            }],
         ),
 
         launch_ros.actions.Node(
