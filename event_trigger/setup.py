@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'event_trigger = event_trigger.event_trigger::main'
+            'event_trigger = event_trigger.event_trigger:main'
         ],
     },
 )
