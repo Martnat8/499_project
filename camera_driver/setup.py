@@ -20,7 +20,7 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*.xml'))),
         (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*.yaml'))),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools', 'rclpy', 'opencv-python', 'cv_bridge'],
     zip_safe=True,
     maintainer='Teft',
     maintainer_email='martnat8@oregonstate.edu',
