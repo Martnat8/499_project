@@ -27,6 +27,10 @@ are curious about parameters or what they do in detail.
 **Sobel Filter:** A node that takes in an image topic and republishes the x, y and xy sobel filtered
   variants of the image. A lifecycle enabled node
 
+**Strain Recorder:** A node that subscribes to a OpenCV canny edge image and calculates the distance
+  between contours. Publishes an image of the region of interest and the strain, given the subjects
+  original length.
+
 --------------------------------------------------------------------------------------------------
 
 # Usage:

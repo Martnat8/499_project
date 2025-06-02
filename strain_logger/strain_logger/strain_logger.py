@@ -121,18 +121,29 @@ class StrainLogger(LifecycleNode):
 
 		# Use opencv find contours function
 		contours, _ = cv.findContours(dilated, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+		# Filter out small contours and sort by vertial position
+		contours = [c for c in contours if cv.contourArea(c) > 600]
 		sorted_contours = sorted(contours, key=lambda c: cv.boundingRect(c)[1])
 
-		# Safety check for enough contours
+		# Safety check for enough contours, publish roi image for debugging
 		if len(sorted_contours) < 2:
 			self.get_logger().warn('Not enough contours found.')
 			image_message = self.bridge.cv2_to_imgmsg(dilated, encoding= 'mono8')
 			self.pub.publish(image_message)
 			return
 
-		# Find top and bottom countours
-		y_top = cv.boundingRect(sorted_contours[0])[1]
-		y_bottom = cv.boundingRect(sorted_contours[-1])[1]
+		# From top and bottom countours, get bounding boxes
+		top_box = cv.boundingRect(sorted_contours[0])
+		bottom_box = cv.boundingRect(sorted_contours[-1])
+
+		# bottom of top contour = y + height
+		y_top = top_box[1] + top_box[3]
+
+		# top of bottom contour = y
+		y_bottom = bottom_box[1]
+
+		# Calculate vertical distance between the two
 		pixel_distance = abs(y_bottom - y_top)
 
 		# Convert pixels to distance and publish
@@ -142,7 +153,8 @@ class StrainLogger(LifecycleNode):
 
 		# Draw contours on incoming message and republish
 		roi_color = cv.cvtColor(roi, cv.COLOR_GRAY2BGR)
-		cv.drawContours(roi_color, sorted_contours, -1, (0, 255, 0), 2) 
+		cv.drawContours(roi_color, [sorted_contours[0]], -1, (0, 255, 0), 2) 
+		cv.drawContours(roi_color, [sorted_contours[-1]], -1, (0, 0, 255), 2) 
 		image_message = self.bridge.cv2_to_imgmsg(roi_color, encoding= 'bgr8')
 		self.pub.publish(image_message)
 
