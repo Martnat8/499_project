@@ -19,7 +19,7 @@ from sensor_msgs.msg import Image
 class CameraDriver(LifecycleNode):
 	def __init__(self):
 
-		# Initialize the parent class of name oscope
+		# Initialize the parent class 
 		super().__init__('camera_driver')
 
 		# Declaring parameters

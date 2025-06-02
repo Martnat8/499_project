@@ -22,7 +22,7 @@ from project_interfaces.srv import SaveSrv
 class BagRecorder(LifecycleNode):
 	def __init__(self):
 
-		# Initialize the parent class of name oscope
+		# Initialize the parent class 
 		super().__init__('bag_recorder')
 
 		# Declaring parameters
