@@ -29,6 +29,7 @@ def generate_launch_description():
                     'bag_recorder',
                     'sobel_filter',
                     'strain_logger',
+                    'csv_writer',
                     ],
             }],          
         ),
@@ -105,6 +106,18 @@ def generate_launch_description():
                     'roi_width': 320,
                     'roi_height': 480,
                     'original_length': 10.0,
+            }],
+        ),
+
+        # Launch and adjust parameters for strain_logger
+        launch_ros.actions.Node(
+            package='csv_writer',
+            executable='csv_writer',
+            parameters=[{
+                    'topic_in': '/measured_strain',
+                    'save_name': 'test_csv',
+                    'save_directory': os.path.expanduser('~/junk_saves/csv_files'),
+                    'save_interval': 1.0,
             }],
         ),
 
