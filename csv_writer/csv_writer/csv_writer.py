@@ -36,7 +36,7 @@ class CSVWriter(LifecycleNode):
 		
 		self.get_logger().info('Configuring CSV Writer')
 
-		# Pull out parameters to determine capture parameters
+		# Pull out parameters 
 		topic = self.get_parameter('topic_in').value
 		self.save_name = self.get_parameter('save_name').value
 		self.save_directory = self.get_parameter('save_directory').value
@@ -45,7 +45,7 @@ class CSVWriter(LifecycleNode):
 		# Create the subscriber
 		self.sub = self.create_subscription(Float32, topic, self.callback, 10)
 
-		# Create a timer using the frequency parameter
+		# Create a timer 
 		self.timer = self.create_timer(timer_interval, self.timer_callback, autostart=False)
 
 		# Establish filepaths
@@ -121,7 +121,7 @@ class CSVWriter(LifecycleNode):
 		time_at_write = datetime.now().time().isoformat()
 
 		with open(full_path, "a") as file:
-			file.write(f"{time_at_write},{self.prev_msg_data}\n")
+			file.write(f"{time_at_write},{self.prev_msg_data:.3f}\n")
 
 
 
