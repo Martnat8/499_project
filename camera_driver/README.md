@@ -2,6 +2,8 @@
 
 This package contains a lifecycle controlled camera driver node inteded to be used 
 with a UVC compliant camera.
+
+This node uses the Video4Linux2 (V4L2) backend via OpenCV. For troubleshooting camera devices or checking available inputs, the v4l2-ctl utility (install with sudo apt install v4l-utils) may be helpful.
 _____________________________________________________________________________________
 
 # Parameters and their defaults:
