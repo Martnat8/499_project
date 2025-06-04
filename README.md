@@ -36,9 +36,14 @@ pip install opencv-python numpy
 **Sobel Filter:** A node that takes in an image topic and republishes the x, y and xy sobel filtered
   variants of the image. A lifecycle enabled node
 
-**Strain Recorder:** A node that subscribes to a OpenCV canny edge image and calculates the distance
+**Strain Logger:** A node that subscribes to a OpenCV canny edge image and calculates the distance
   between contours. Publishes an image of the region of interest and the strain, given the subjects
   original length.
+
+  **Event Trigger:** A node that triggers the Ring Buffer Recorder node on a service call
+
+  **CSV Writer:** A node that subscribes to a Float32 topic and appends the data to a CSV file
+    saved on the computer. Will create the file if it does not already exist.
 
 --------------------------------------------------------------------------------------------------
 
