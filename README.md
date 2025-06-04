@@ -1,7 +1,8 @@
 # ROB499 Project
 
 This folder contains the nodes for the final project of ROB 499. Each package has a README if you 
-are curious about parameters or what they do in detail.
+are curious about parameters or what they do in detail. This was build in the ROS2 Jazzy distro and 
+requires opencv-python and numpy packages.
 
 --------------------------------------------------------------------------------------------------
 
