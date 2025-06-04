@@ -40,6 +40,8 @@ colcon build
 source install/setup.bash
 
 # Check device (sometimes need to change id in launch file)
+For camera device enumeration and configuration, v4l2-ctl (part of the Video4Linux2 utilities) is used. You can install it with sudo apt install v4l-utils if it's not already available.
+
 v4l2-ctl --list-devices
 
 
