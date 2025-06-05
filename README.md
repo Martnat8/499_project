@@ -14,36 +14,35 @@ pip install opencv-python numpy
 
 --------------------------------------------------------------------------------------------------
 
-**Package Launch:**  Provides a single launch file dedicated to launching nodes and modifying params.
+**Package Launch:**  Provides a single launch file dedicated to launching nodes and modifying parameters.
 
 **Lifecycle Coordinator:** A node that can coordinate multiple lifecycle enabled nodes at a time, bringing
-  them up or down in correct sequence.
+them up or down in correct sequence. A list of nodes are passed in as a parameter at launch time.
 
 **Project Interfaces:** Contains custom service definitions.
 
 **Camera Driver:** Captures images from a UVC compliant camera and publishes them on an image topic.
+Has parameters for device ID as well as encoding and resolution.
 
-**Periodic Screenshot:** Subscribes to an image topic and save an image to disc at a specified rate.
+**Periodic Screenshot:** Subscribes to an image topic and saves an image to disc at a specified rate 
+as determined by parameters.
 
 **Ring Buffer Recorder:** Buffers image frames from a subscribed topic and saves a video to disc upon 
-  a service call.
+a service call. Has parameters for video length and encoding.
 
-**Bag Recorder:** Records a bag from a list of topics that you can pass in as parameters. Has a 
-  parameter that lets you turn on and off bag saving but is not a dynamic parameter. It's just 
-  meant to allow me to turn off bag saving if I don't want it on while keeping the structure of the
-  launch file. If you want to record with it you need to set true and relaunch.
+**Bag Recorder:** Records a bag from a list of topics that you can pass in as parameters. 
+Has a parameter that lets you turn on and off bag saving but is not a dynamic parameter.
 
-**Sobel Filter:** A node that takes in an image topic and republishes the x, y and xy sobel filtered
-  variants of the image. A lifecycle enabled node
+**Sobel Filter:** A node that takes in an image topic and republishes the x, y and xy sobel filtered 
+variants of the image as well as a OpenCV Canny Edge detected image. 
 
-**Strain Logger:** A node that subscribes to a OpenCV canny edge image and calculates the distance
-  between contours. Publishes an image of the region of interest and the strain, given the subjects
-  original length.
+**Strain Logger:** A node that subscribes to a OpenCV canny edge image and calculates the distance between
+contours. Publishes an image of the region of interest and the strain, given the subject’s original length.
 
-  **Event Trigger:** A node that triggers the Ring Buffer Recorder node on a service call
+**Event Trigger:** A node that triggers the Ring Buffer Recorder node on a service call.
 
-  **CSV Writer:** A node that subscribes to a Float32 topic and appends the data to a CSV file
-    saved on the computer. Will create the file if it does not already exist.
+**CSV Writer:** A node that subscribes to a Float32 topic, creates and appends data to a CSV file saved on 
+the computer. 
 
 --------------------------------------------------------------------------------------------------
 
